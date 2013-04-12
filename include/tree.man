@@ -1,0 +1,374 @@
+TREE(3)
+Contents
+
+    NAME
+    SYNOPSIS
+    DESCRIPTION
+    SPLAY TREES
+    RED-BLACK TREES
+    NOTES
+    AUTHORS 
+
+
+NAME    [Toc]    [Back]
+
+     SPLAY_PROTOTYPE, SPLAY_GENERATE, SPLAY_ENTRY, SPLAY_HEAD,
+     SPLAY_INITIALIZER,  SPLAY_ROOT,   SPLAY_EMPTY,   SPLAY_NEXT,
+SPLAY_MIN,
+     SPLAY_MAX,      SPLAY_FIND,     SPLAY_LEFT,     SPLAY_RIGHT,
+SPLAY_FOREACH,
+     SPLAY_INIT,   SPLAY_INSERT,   SPLAY_REMOVE,    RB_PROTOTYPE,
+RB_GENERATE,
+     RB_ENTRY,   RB_HEAD,   RB_INITIALIZER,   RB_ROOT,  RB_EMPTY,
+RB_NEXT, RB_MIN,
+     RB_MAX, RB_FIND, RB_LEFT, RB_RIGHT,  RB_PARENT,  RB_FOREACH,
+RB_INIT,
+     RB_INSERT,  RB_REMOVE  -  implementations  of splay and redblack trees
+
+SYNOPSIS    [Toc]    [Back]
+
+     #include <sys/tree.h>
+
+     SPLAY_PROTOTYPE(NAME, TYPE, FIELD, CMP);
+
+     SPLAY_GENERATE(NAME, TYPE, FIELD, CMP);
+
+     SPLAY_ENTRY(TYPE);
+
+     SPLAY_HEAD(HEADNAME, TYPE);
+
+     struct TYPE *
+     SPLAY_INITIALIZER(SPLAY_HEAD *head);
+
+     SPLAY_ROOT(SPLAY_HEAD *head);
+
+     bool
+     SPLAY_EMPTY(SPLAY_HEAD *head);
+
+     struct TYPE *
+     SPLAY_NEXT(NAME, SPLAY_HEAD *head, struct TYPE *elm);
+
+     struct TYPE *
+     SPLAY_MIN(NAME, SPLAY_HEAD *head);
+
+     struct TYPE *
+     SPLAY_MAX(NAME, SPLAY_HEAD *head);
+
+     struct TYPE *
+     SPLAY_FIND(NAME, SPLAY_HEAD *head, struct TYPE *elm);
+
+     struct TYPE *
+     SPLAY_LEFT(struct TYPE *elm, SPLAY_ENTRY NAME);
+
+     struct TYPE *
+     SPLAY_RIGHT(struct TYPE *elm, SPLAY_ENTRY NAME);
+
+     SPLAY_FOREACH(VARNAME, NAME, SPLAY_HEAD *head);
+
+     void
+     SPLAY_INIT(SPLAY_HEAD *head);
+
+     struct TYPE *
+     SPLAY_INSERT(NAME, SPLAY_HEAD *head, struct TYPE *elm);
+
+     struct TYPE *
+     SPLAY_REMOVE(NAME, SPLAY_HEAD *head, struct TYPE *elm);
+
+     RB_PROTOTYPE(NAME, TYPE, FIELD, CMP);
+
+     RB_GENERATE(NAME, TYPE, FIELD, CMP);
+
+     RB_ENTRY(TYPE);
+
+     RB_HEAD(HEADNAME, TYPE);
+
+     RB_INITIALIZER(RB_HEAD *head);
+
+     struct TYPE *
+     RB_ROOT(RB_HEAD *head);
+
+     bool
+     RB_EMPTY(RB_HEAD *head);
+
+     struct TYPE *
+     RB_NEXT(NAME, RB_HEAD *head, struct TYPE *elm);
+
+     struct TYPE *
+     RB_MIN(NAME, RB_HEAD *head);
+
+     struct TYPE *
+     RB_MAX(NAME, RB_HEAD *head);
+
+     struct TYPE *
+     RB_FIND(NAME, RB_HEAD *head, struct TYPE *elm);
+
+     struct TYPE *
+     RB_LEFT(struct TYPE *elm, RB_ENTRY NAME);
+
+     struct TYPE *
+     RB_RIGHT(struct TYPE *elm, RB_ENTRY NAME);
+
+     struct TYPE *
+     RB_PARENT(struct TYPE *elm, RB_ENTRY NAME);
+
+     RB_FOREACH(VARNAME, NAME, RB_HEAD *head);
+
+     void
+     RB_INIT(RB_HEAD *head);
+
+     struct TYPE *
+     RB_INSERT(NAME, RB_HEAD *head, struct TYPE *elm);
+
+     struct TYPE *
+     RB_REMOVE(NAME, RB_HEAD *head, struct TYPE *elm);
+
+DESCRIPTION    [Toc]    [Back]
+
+     These macros define data structures for different  types  of
+trees: splay
+     trees and red-black trees.
+
+     In the macro definitions, TYPE is the name tag of a user defined structure
+ that must contain  a  field  of  type  SPLAY_ENTRY,  or
+RB_ENTRY, named
+     ENTRYNAME.   The argument HEADNAME is the name tag of a user
+defined
+     structure  that  must   be   declared   using   the   macros
+SPLAY_HEAD() or
+     RB_HEAD().  The argument NAME has to be a unique name prefix
+for every
+     tree that is defined.
+
+     The function prototypes are declared with either  SPLAY_PROTOTYPE or
+     RB_PROTOTYPE.  The function bodies are generated with either
+     SPLAY_GENERATE or RB_GENERATE.  See the examples  below  for
+further explanation
+ of how these macros are used.
+
+SPLAY TREES    [Toc]    [Back]
+
+     A splay tree is a self-organizing data structure.  Every operation on the
+     tree causes a splay to happen.  The splay moves the requested node to the
+     root of the tree and partly rebalances it.
+
+     This  has  the  benefit  that request locality causes faster
+lookups as the
+     requested nodes move to the top of the tree.  On  the  other
+hand, every
+     lookup causes memory writes.
+
+     The Balance Theorem bounds the total access time for m operations and n
+     inserts on an initially empty tree as O((m + n)lg  n).   The
+amortized cost
+     for a sequence of m accesses to a splay tree is O(lg n).
+
+     A  splay  tree  is  headed  by  a  structure  defined by the
+SPLAY_HEAD() macro.
+     A SPLAY_HEAD structure is declared as follows:
+
+           SPLAY_HEAD(HEADNAME, TYPE) head;
+
+     where HEADNAME is the name of the structure to  be  defined,
+and struct
+     TYPE  is  the  type  of the elements to be inserted into the
+tree.
+
+     The SPLAY_ENTRY() macro declares a structure that allows elements to be
+     connected in the tree.
+
+     In  order  to  use  the  functions  that manipulate the tree
+structure, their
+     prototypes need to be declared  with  the  SPLAY_PROTOTYPE()
+macro, where
+     NAME  is  a unique identifier for this particular tree.  The
+TYPE argument
+     is the type of the structure that is being  managed  by  the
+tree.  The
+     FIELD  argument  is  the  name  of  the  element  defined by
+SPLAY_ENTRY().
+
+     The function bodies are generated with the  SPLAY_GENERATE()
+macro.  It
+     takes the same arguments as the SPLAY_PROTOTYPE() macro, but
+should be
+     used only once.
+
+     Finally, the CMP argument is the name of a function used  to
+compare trees
+     noded  with each other.  The function takes two arguments of
+type struct
+     TYPE *.  If the first argument is smaller than  the  second,
+the function
+     returns  a  value smaller than zero.  If they are equal, the
+function returns
+ zero.  Otherwise, it should  return  a  value  greater
+than zero.  The
+     compare function defines the order of the tree elements.
+
+     The  SPLAY_INIT()  macro  initializes the tree referenced by
+head.
+
+     The splay tree can also be initialized statically  by  using
+the
+     SPLAY_INITIALIZER() macro like this:
+
+           SPLAY_HEAD(HEADNAME,  TYPE)  head  =  SPLAY_INITIALIZER(&head);
+
+     The SPLAY_INSERT() macro inserts the new  element  elm  into
+the tree.
+
+     The  SPLAY_REMOVE()  macro  removes the element elm from the
+tree pointed by
+     head.
+
+     The SPLAY_FIND() macro can be used to find a particular element in the
+     tree.
+
+           struct TYPE find, *res;
+           find.key = 30;
+           res = SPLAY_FIND(NAME, &head, &find);
+
+     The SPLAY_ROOT(), SPLAY_MIN(), SPLAY_MAX(), and SPLAY_NEXT()
+macros can
+     be used to traverse the tree:
+
+           for (np = SPLAY_MIN(NAME, &head); np  !=  NULL;  np  =
+SPLAY_NEXT(NAME, &head, np))
+
+     Or, for simplicity, one can use the SPLAY_FOREACH() macro:
+
+           SPLAY_FOREACH(np, NAME, &head)
+
+     The  SPLAY_EMPTY()  macro  should be used to check whether a
+splay tree is
+     empty.
+
+RED-BLACK TREES    [Toc]    [Back]
+
+     A red-black tree is a binary search tree with the node color
+as an extra
+     attribute.  It fulfills a set of conditions:
+
+           1.    every  search  path from the root to a leaf consists of the same
+                number of black nodes,
+           2.   each red node (except for the root) has  a  black
+parent,
+           3.   each leaf node is black.
+
+     Every  operation  on a red-black tree is bounded as O(lg n).
+The maximum
+     height of a red-black tree is 2lg (n+1).
+
+     A red-black tree is headed by a  structure  defined  by  the
+RB_HEAD() macro.
+     A RB_HEAD structure is declared as follows:
+
+           RB_HEAD(HEADNAME, TYPE) head;
+
+     where  HEADNAME  is the name of the structure to be defined,
+and struct
+     TYPE is the type of the elements to  be  inserted  into  the
+tree.
+
+     The  RB_ENTRY()  macro declares a structure that allows elements to be connected
+ in the tree.
+
+     In order to use  the  functions  that  manipulate  the  tree
+structure, their
+     prototypes  need  to  be  declared  with  the RB_PROTOTYPE()
+macro, where NAME
+     is a unique identifier for this particular tree.   The  TYPE
+argument is
+     the type of the structure that is being managed by the tree.
+The FIELD
+     argument is the name of the element defined by RB_ENTRY().
+
+     The function bodies are  generated  with  the  RB_GENERATE()
+macro.  It takes
+     the  same  arguments as the RB_PROTOTYPE() macro, but should
+be used only
+     once.
+
+     Finally, the CMP argument is the name of a function used  to
+compare trees
+     noded  with each other.  The function takes two arguments of
+type struct
+     TYPE *.  If the first argument is smaller than  the  second,
+the function
+     returns  a  value smaller than zero.  If they are equal, the
+function returns
+ zero.  Otherwise, it should  return  a  value  greater
+than zero.  The
+     compare function defines the order of the tree elements.
+
+     The RB_INIT() macro initializes the tree referenced by head.
+
+     The red-black tree can also be initialized statically by using the
+     RB_INITIALIZER() macro like this:
+
+           RB_HEAD(HEADNAME, TYPE) head = RB_INITIALIZER(&head);
+
+     The  RB_INSERT()  macro inserts the new element elm into the
+tree.
+
+     The RB_REMOVE() macro removes the element elm from the  tree
+pointed by
+     head.
+
+     The RB_FIND() macro can be used to find a particular element
+in the tree.
+
+           struct TYPE find, *res;
+           find.key = 30;
+           res = RB_FIND(NAME, &head, &find);
+
+     The RB_ROOT(), RB_MIN(), RB_MAX(), and RB_NEXT() macros  can
+be used to
+     traverse the tree:
+
+           for  (np  =  RB_MIN(NAME,  &head);  np  !=  NULL; np =
+RB_NEXT(NAME, &head, np))
+
+     Or, for simplicity, one can use the RB_FOREACH() macro:
+
+           RB_FOREACH(np, NAME, &head)
+
+     The RB_EMPTY() macro should be used to check whether a  redblack tree is
+     empty.
+
+NOTES    [Toc]    [Back]
+
+     Trying  to  free a tree in the following way is a common error:
+
+           SPLAY_FOREACH(var, NAME, &head) {
+                   SPLAY_REMOVE(NAME, &head, var);
+                   free(var);
+           }
+           free(head);
+
+     Since var is free'd, the FOREACH() macro refers to a pointer
+that may
+     have  been  reallocated already.  Proper code needs a second
+variable.
+
+           for (var = SPLAY_MIN(NAME, &head); var != NULL; var  =
+nxt) {
+                   nxt = SPLAY_NEXT(NAME, &head, var);
+                   SPLAY_REMOVE(NAME, &head, var);
+                   free(var);
+           }
+
+     Both  RB_INSERT() and SPLAY_INSERT() return NULL if the element was inserted
+ in the tree successfully,  otherwise  they  return  a
+pointer to the
+     element with the colliding key.
+
+     Accordingly,   RB_REMOVE()  and  SPLAY_REMOVE()  return  the
+pointer to the removed
+ element, otherwise they return NULL to indicate an error.
+
+AUTHORS    [Toc]    [Back]
+
+     The author of the tree macros is Niels Provos.
+
+OpenBSD      3.6                        February     24,     2002
