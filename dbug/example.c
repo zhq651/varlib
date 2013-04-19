@@ -6,10 +6,9 @@
  * Tonu Samuel <tonu@spam.ee>
  *
  */
-#define MSDOS
 #include "dbug.h"
 static int sub1 (void);
-static void sub2 (char *arg);
+static void sub2 (const char *arg);
 
 static int
 sub1 (void)
@@ -25,7 +24,7 @@ sub1 (void)
 
 
 static void
-sub2 (char *arg)
+sub2 (const char *arg)
 {
   DBUG_ENTER ("sub2");
   DBUG_PRINT ("info", ("Got argument: '%s'", arg));

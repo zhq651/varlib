@@ -85,7 +85,7 @@ extern "C"
 typedef unsigned int uint;
 typedef unsigned long ulong;
 #endif /*end if WIN32 */
-    extern char _dig_vec[];
+extern char _dig_vec[];
 
 #if !defined(DBUG_OFF) && !defined(_lint)
     extern int _db_on_, _no_db_;
@@ -135,6 +135,7 @@ typedef unsigned long ulong;
 #define DBUG_my_pthread_mutex_lock_FILE { _db_lock_file(); }
 #define DBUG_my_pthread_mutex_unlock_FILE { _db_unlock_file(); }
 #define DBUG_ASSERT(A) assert(A)
+
 #else							   /* No debugger */
 
 #define DBUG_ENTER(a1)
