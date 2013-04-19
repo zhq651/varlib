@@ -23,15 +23,109 @@
 
 #ifndef HASH_H_
 # define HASH_H_
+#include <sys/types.h>
+#ifdef WIN32
+ #include <stdint.h>
+#endif /*end if define(WIN32) */
 
-# ifndef PARAMS
-#  if PROTOTYPES || __STDC__
-#   define PARAMS(Args) Args
-#  else
-#   define PARAMS(Args) ()
-#  endif
-# endif
 
+#ifndef _STDBOOL_H_
+#define	_STDBOOL_H_	
+
+#define	__bool_true_false_are_defined	1
+
+#ifndef __cplusplus
+
+#define	false	0
+#define	true	1
+
+#define	bool	_Bool
+#if __STDC_VERSION__ < 199901L && __GNUC__ < 3
+typedef	int	_Bool;
+#endif
+
+#endif /* !__cplusplus */
+
+#endif /* !_STDBOOL_H_ */
+
+#ifndef __HAVE_HASH32_BUF			/* not overridden by MD hash */
+
+#define	HASH32_BUF_INIT	5381
+
+/*
+ * uint32_t
+ * hash32_buf(const void *bf, size_t len, uint32_t hash)
+ *	return a 32 bit hash of the binary buffer buf (size len),
+ *	seeded with an initial hash value of hash (usually HASH32_BUF_INIT).
+ */
+static __inline uint32_t
+hash32_buf(const void *bf, size_t len, uint32_t hash)
+{
+	const uint8_t *s = (const uint8_t*)bf;
+
+	while (len-- != 0)			/* "nemesi": k=257, r=r*257 */
+		hash = hash * 257 + *s++;
+	return (hash * 257);
+}
+#endif	/* __HAVE_HASH32_BUF */
+
+
+static __inline uint32_t
+hash_pjw (const void *x,unsigned int tablesize)
+{
+  const char *s =(const char *) x;
+  unsigned int h = 0;
+  unsigned int g;
+  while (*s != 0)
+    {
+      h = (h << 4) + *s++;
+      if ((g = h & (unsigned int) 0xf0000000) != 0)
+        h = (h ^ (g >> 24)) ^ g;
+    }
+
+  return (h%tablesize); 
+} 
+#ifndef __HAVE_HASH32_STR			/* not overridden by MD hash */
+
+#define	HASH32_STR_INIT	5381
+/*
+ * uint32_t
+ * hash32_str(const void *bf, uint32_t hash)
+ *	return a 32 bit hash of NUL terminated ASCII string buf,
+ *	seeded with an initial hash value of hash (usually HASH32_STR_INIT).
+ */
+static __inline uint32_t
+hash32_str(const void *bf, uint32_t hash)
+{
+	const uint8_t *s = (const uint8_t*)bf;
+	uint8_t	c;
+
+	while ((c = *s++) != 0)
+		hash = hash * 33 + c;		/* "perl": k=33, r=r+r/32 */
+	return (hash + (hash >> 5));
+}
+
+/*
+ * uint32_t
+ * hash32_strn(const void *bf, size_t len, uint32_t hash)
+ *	return a 32 bit hash of NUL terminated ASCII string buf up to
+ *	a maximum of len bytes,
+ *	seeded with an initial hash value of hash (usually HASH32_STR_INIT).
+ */
+static __inline uint32_t
+hash32_strn(const void *bf, size_t len, uint32_t hash)
+{
+	const uint8_t	*s = (const uint8_t*)bf;
+	uint8_t	c;
+
+	while ((c = *s++) != 0 && len-- != 0)
+		hash = hash * 33 + c;		/* "perl": k=33, r=r+r/32 */
+	return (hash + (hash >> 5));
+}
+#endif	/* __HAVE_HASH32_STR */
+#ifndef PARAMS
+#define PARAMS(Args) Args
+#endif
 typedef unsigned (*Hash_hasher) PARAMS ((const void *, unsigned));
 typedef bool (*Hash_comparator) PARAMS ((const void *, const void *));
 typedef void (*Hash_data_freer) PARAMS ((void *));
@@ -67,7 +161,7 @@ unsigned hash_get_n_buckets_used PARAMS ((const Hash_table *));
 unsigned hash_get_n_entries PARAMS ((const Hash_table *));
 unsigned hash_get_max_bucket_length PARAMS ((const Hash_table *));
 bool hash_table_ok PARAMS ((const Hash_table *));
-void hash_print_statistics PARAMS ((const Hash_table *, FILE *));
+void hash_print_statistics PARAMS ((const Hash_table *, void *));
 void *hash_lookup PARAMS ((const Hash_table *, const void *));
 
 /* Walking.  */
@@ -89,5 +183,7 @@ void hash_free PARAMS ((Hash_table *));
 bool hash_rehash PARAMS ((Hash_table *, unsigned));
 void *hash_insert PARAMS ((Hash_table *, const void *));
 void *hash_delete PARAMS ((Hash_table *, const void *));
+
+#undef PARAMS
 
 #endif

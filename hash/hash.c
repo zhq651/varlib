@@ -205,8 +205,9 @@ hash_table_ok (const Hash_table *table)
 }
 
 void
-hash_print_statistics (const Hash_table *table, FILE *stream)
+hash_print_statistics (const Hash_table *table, void* file_stream)
 {
+  FILE* stream = (FILE*)file_stream;
   unsigned n_entries = hash_get_n_entries (table);
   unsigned n_buckets = hash_get_n_buckets (table);
   unsigned n_buckets_used = hash_get_n_buckets_used (table);
@@ -985,7 +986,7 @@ hash_delete (Hash_table *table, const void *entry)
 }
 
 /* Testing.  */
-
+#define TESTING 1
 #if TESTING
 
 void
