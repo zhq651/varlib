@@ -89,6 +89,13 @@ bool_t;
 
 #define _VARARGS(X) X
 #define FN_LIBCHAR 1024
+
+#ifdef WIN32
+#define FN_PATHSEP '\\'
+#else
+#define FN_PATHSEP '/'
+#endif
+
 #define FN_REFLEN 1024
 #define NullS ""
 
@@ -138,6 +145,7 @@ bool_t;
 #define TRACING (stack -> flags & TRACE_ON)
 #define DEBUGGING (stack -> flags & DEBUG_ON)
 #define PROFILING (stack -> flags & PROFILE_ON)
+#define FILING (stack -> flags & FILE_ON)
 #define STREQ(a,b) (strcmp(a,b) == 0)
 #ifndef WIN32
 #define min(a,b)        ((a) < (b) ? (a) : (b))
@@ -1378,16 +1386,16 @@ DoPrefix(uint _line_)
 #endif
     }
     if (stack->flags & NUMBER_ON) {
-	(void) fprintf(_db_fp_, "%5d: ", state->lineno);
+	(void) fprintf(_db_fp_, "%d: ", state->lineno);
     }
     if (stack->flags & PROCESS_ON) {
 	(void) fprintf(_db_fp_, "%s: ", _db_process_);
     }
     if (stack->flags & FILE_ON) {
-	(void) fprintf(_db_fp_, "%14s: ", BaseName(state->file));
+	(void) fprintf(_db_fp_, "%s: ", BaseName(state->file));
     }
     if (stack->flags & LINE_ON) {
-	(void) fprintf(_db_fp_, "%5d: ", _line_);
+	(void) fprintf(_db_fp_, "%d: ", _line_);
     }
     if (stack->flags & DEPTH_ON) {
 	(void) fprintf(_db_fp_, "%4d: ", state->level);
@@ -1649,8 +1657,9 @@ static char *
 BaseName(const char *pathname)
 {
     register const char *base;
-
-    base = strrchr(pathname, FN_LIBCHAR);
+    /*buf fix FN_LIBCHAR to FN_PATHSEP*/
+   /* base = strrchr(pathname, FN_LIBCHAR); */
+   base = strrchr(pathname, FN_PATHSEP);
     if (base++ == NullS)
 	base = pathname;
     return ((char *) base);

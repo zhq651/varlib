@@ -85,17 +85,8 @@ extern "C"
 typedef unsigned int uint;
 typedef unsigned long ulong;
 #endif /*end if WIN32 */
-extern char _dig_vec[];
-/* Predefined log strings */
-#define DBUG_FATAL_STR  "fatal"
-#define DBUG_ERROR_STR  "error"
-#define DBUG_WARN_STR   "warn"
-#define DBUG_INFO_STR   "info"
-#define DBUG_ARGS_STR   "args"
-#define DBUG_DEBUG_STR  "debug"
-#define DBUG_TRACE_STR  "trace"
+    extern char _dig_vec[];
 
-/* Predefined log strings */
 #if !defined(DBUG_OFF) && !defined(_lint)
     extern int _db_on_, _no_db_;
     extern FILE *_db_fp_;
@@ -130,15 +121,6 @@ extern char _dig_vec[];
 	{if (_db_on_) {if (_db_keyword_ (keyword)) { a1 }}}
 #define DBUG_PRINT(keyword,arglist) \
 	{if (_db_on_) {_db_pargs_(__LINE__,keyword); _db_doprnt_ arglist;}}
-/* Predefined log check strings */
-#define DBUG_FATAL(arglist) DBUG_PRINT(DBUG_FATAL_STR, arglist) 
-#define DBUG_ERROR(arglist) DBUG_PRINT(DBUG_ERROR_STR, arglist) 
-#define DBUG_WARN(arglist) DBUG_PRINT(DBUG_WARN_STR, arglist) 
-#define DBUG_INFO(arglist) DBUG_PRINT(DBUG_INFO_STR, arglist) 
-#define DBUG_DEBUG(arglist) DBUG_PRINT(DBUG_DEBUG_STR, arglist) 
-#define DBUG_TRACE(arglist) DBUG_PRINT(DBUG_TRACE_STR, arglist) 
-#define DBUG_ARGS(arglist) DBUG_PRINT(DBUG_ARGS_STR, arglist) 
-/* Predefined log check strings */
 #define DBUG_PUSH(a1) _db_push_ (a1)
 #define DBUG_POP() _db_pop_ ()
 #define DBUG_PROCESS(a1) (_db_process_ = a1)
@@ -153,7 +135,6 @@ extern char _dig_vec[];
 #define DBUG_my_pthread_mutex_lock_FILE { _db_lock_file(); }
 #define DBUG_my_pthread_mutex_unlock_FILE { _db_unlock_file(); }
 #define DBUG_ASSERT(A) assert(A)
-
 #else							   /* No debugger */
 
 #define DBUG_ENTER(a1)
@@ -161,15 +142,6 @@ extern char _dig_vec[];
 #define DBUG_VOID_RETURN return
 #define DBUG_EXECUTE(keyword,a1) {}
 #define DBUG_PRINT(keyword,arglist) {}
-/* Predefined log check strings */
-#define DBUG_FATAL(arglist)
-#define DBUG_ERROR(arglist)
-#define DBUG_WARN(arglist)
-#define DBUG_INFO(arglist)
-#define DBUG_DEBUG(arglist)
-#define DBUG_TRACE(arglist)
-#define DBUG_ARGS(arglist)
-/* Predefined log check strings */
 #define DBUG_PUSH(a1) {}
 #define DBUG_POP() {}
 #define DBUG_PROCESS(a1) {}
@@ -188,3 +160,4 @@ extern char _dig_vec[];
 }
 #endif
 #endif
+
