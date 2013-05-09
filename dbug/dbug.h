@@ -70,46 +70,50 @@
 #define _dbug_h
 
 #include <stdio.h>
+#include <stdbool.h>
+#include <assert.h>
 #include <sys/types.h>
 #include <time.h>
+
 #ifdef WIN32
-#define  __attribute__(x)
-#include <winsock2.h>
+    #ifndef __attribute__
+        #define  __attribute__(x)
+    #endif
 #endif
+
 #ifdef	__cplusplus
 extern "C"
 {
 #endif
 
 #ifdef WIN32
-typedef unsigned int uint;
-typedef unsigned long ulong;
+typedef unsigned int dbug_uint;
+typedef unsigned long dbug_ulong;
 #endif /*end if WIN32 */
     extern char _dig_vec[];
 
 #if !defined(DBUG_OFF) && !defined(_lint)
-    extern int _db_on_, _no_db_;
+    extern bool _db_on_, _no_db_;
     extern FILE *_db_fp_;
     extern const char *_db_process_;
-    extern int _db_keyword_(const char *keyword);
+    extern bool _db_keyword_(const char *keyword);
     extern void _db_setjmp_(void);
     extern void _db_longjmp_(void);
     extern void _db_push_(const char *control);
     extern void _db_pop_(void);
     extern void _db_enter_(const char *_func_, const char *_file_,
-	uint _line_, const char **_sfunc_, const char **_sfile_,
-	uint * _slevel_, char ***);
-    extern void _db_return_(uint _line_, const char **_sfunc_,
-	const char **_sfile_, uint * _slevel_);
-    extern void _db_pargs_(uint _line_, const char *keyword);
+	dbug_uint _line_, const char **_sfunc_, const char **_sfile_,
+	dbug_uint * _slevel_, char ***);
+    extern void _db_return_(dbug_uint _line_, const char **_sfunc_,
+	const char **_sfile_, dbug_uint * _slevel_);
+    extern void _db_pargs_(dbug_uint _line_, const char *keyword);
     extern void _db_doprnt_(const char *format, ...);
-    extern void _db_dump_(uint _line_, const char *keyword,
-	const char *memory, uint length);
+    extern void _db_dump_(dbug_uint _line_, const char *keyword,
+	const char *memory, dbug_uint length);
     extern void _db_lock_file(void);
     extern void _db_unlock_file(void);
 
-
-#define DBUG_ENTER(a) const char *_db_func_, *_db_file_; uint _db_level_; \
+#define DBUG_ENTER(a) const char *_db_func_, *_db_file_; dbug_uint _db_level_; \
 	char **_db_framep_; \
 	_db_enter_ (a,__FILE__,__LINE__,&_db_func_,&_db_file_,&_db_level_, \
 		    &_db_framep_)
@@ -135,6 +139,23 @@ typedef unsigned long ulong;
 #define DBUG_my_pthread_mutex_lock_FILE { _db_lock_file(); }
 #define DBUG_my_pthread_mutex_unlock_FILE { _db_unlock_file(); }
 #define DBUG_ASSERT(A) assert(A)
+
+
+#define DBUG_FATAL_STR "fatal"
+#define DBUG_ERROR_STR "error"
+#define DBUG_WARN_STR  "warn "
+#define DBUG_INFO_STR  "info "
+#define DBUG_ARGS_STR  "args "
+#define DBUG_DEBUG_STR "debug"
+#define DBUG_TRACE_STR "trace"
+
+#define DBUG_FATAL(arglist) DBUG_PRINT(DBUG_FATAL_STR, arglist)
+#define DBUG_ERROR(arglist) DBUG_PRINT(DBUG_ERROR_STR, arglist)
+#define DBUG_WARN(arglist) DBUG_PRINT(DBUG_WARN_STR, arglist)
+#define DBUG_INFO(arglist) DBUG_PRINT(DBUG_INFO_STR, arglist)
+#define DBUG_DEBUG(arglist) DBUG_PRINT(DBUG_DEBUG_STR, arglist)
+#define DBUG_TRACE(arglist) DBUG_PRINT(DBUG_TRACE_STR, arglist)
+#define DBUG_ARGS(arglist) DBUG_PRINT(DBUG_ARGS_STR, arglist)
 #else							   /* No debugger */
 
 #define DBUG_ENTER(a1)
@@ -155,9 +176,17 @@ typedef unsigned long ulong;
 #define DBUG_my_pthread_mutex_lock_FILE
 #define DBUG_my_pthread_mutex_unlock_FILE
 #define DBUG_ASSERT(A) {}
+
+#define DBUG_FATAL(arglist)
+#define DBUG_ERROR(arglist)
+#define DBUG_WARN(arglist)
+#define DBUG_INFO(arglist)
+#define DBUG_DEBUG(arglist)
+#define DBUG_TRACE(arglist)
+#define DBUG_ARGS(arglist)
+
 #endif
 #ifdef	__cplusplus
 }
 #endif
 #endif
-

@@ -6,10 +6,9 @@
  * Tonu Samuel <tonu@spam.ee>
  *
  */
-#include "dbug.h"
-#include "strbuf.h"
 #include <stdint.h>
 #include <string.h>
+#include "dbug.h"
 static int sub1 (void);
 static void sub2 (const char *arg);
 
@@ -46,7 +45,7 @@ main (void)
 
     ret = sub1 ();
     /*warring you should make sure the DBUG_PRINT is between DBUG_ENTER and (DBUG_VOID_RETURN or DBUG_RETURN)*/
-    /*DBUG_PRINT ("info", ("Returned value: %d", ret));*/
+    DBUG_PRINT("info",("return value eq %d ",ret));
     return 0;
 }
 

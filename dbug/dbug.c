@@ -45,7 +45,7 @@
  *	support routines which are called from the macro expansions.
  *
  *	Externally visible functions in the runtime support module
- *	use the naming convention pattern "_db_xx...xx_", thus
+ *	use the naDBUG_MINg convention pattern "_db_xx...xx_", thus
  *	they are unlikely to collide with user defined function names.
  *
  *  AUTHOR(S)
@@ -71,21 +71,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <sys/types.h>
 #ifndef WIN32
 #include <unistd.h>
 #endif
 #include "dbug.h"
-/* Make a new type: bool_t */
-#ifndef WIN32
-typedef enum
-{
-    FALSE = 0,
-    TRUE = (!FALSE)
-}
-bool_t;
-#endif
-#define my_bool int
+/* Make a new type: bool */
 
 #define _VARARGS(X) X
 #define FN_LIBCHAR 1024
@@ -122,10 +114,10 @@ bool_t;
 
 #define PRINTBUF	      1024			   /* Print buffer size */
 #define INDENT		      2				   /* Indentation per trace level */
-#define MAXDEPTH	      200			   /* Maximum trace depth default */
+#define DBUG_MAXDEPTH	      200			   /* DBUG_MAXimum trace depth default */
 
 /*
- *	The following flags are used to determine which
+ *	The following flags are used to deterDBUG_MINe which
  *	capabilities the user has enabled with the state
  *	push macro.
  */
@@ -147,19 +139,17 @@ bool_t;
 #define PROFILING (stack -> flags & PROFILE_ON)
 #define FILING (stack -> flags & FILE_ON)
 #define STREQ(a,b) (strcmp(a,b) == 0)
-#ifndef WIN32
-#define min(a,b)        ((a) < (b) ? (a) : (b))
-#define max(a,b)        ((a) > (b) ? (a) : (b))
+
+#ifndef DBUG_MIN
+#define DBUG_MIN(a,b)        ((a) < (b) ? (a) : (b))
 #endif
+#ifndef DBUG_MAX
+#define DBUG_MAX(a,b)        ((a) > (b) ? (a) : (b))
+#endif
+
 /*
  *	Typedefs to make things more obvious.
  */
-
-#ifndef WIN32
-typedef int BOOLEAN;
-#else
-#define BOOLEAN BOOL
-#endif
 
 /*
  *	Make it easy to change storage classes if necessary.
@@ -200,9 +190,9 @@ typedef int BOOLEAN;
 FILE *_db_fp_ = (FILE *) 0;				   /* Output stream, default stderr */
 const char *_db_process_ = (char *) "dbug";			   /* Pointer to process name; argv[0] */
 FILE *_db_pfp_ = (FILE *) 0;				   /* Profile stream, 'dbugmon.out' */
-BOOLEAN _db_on_ = FALSE;				   /* TRUE if debugging currently on */
-BOOLEAN _db_pon_ = FALSE;				   /* TRUE if profile currently on */
-BOOLEAN _no_db_ = FALSE;				   /* TRUE if no debugging at all */
+bool _db_on_ = false;				   /* true if debugging currently on */
+bool _db_pon_ = false;				   /* true if profile currently on */
+bool _no_db_ = false;				   /* true if no debugging at all */
 
 /*
  *	Externally supplied functions.
@@ -210,7 +200,7 @@ BOOLEAN _no_db_ = FALSE;				   /* TRUE if no debugging at all */
 
 
 
-IMPORT int _sanity(const char *file, uint line);
+IMPORT int _sanity(const char *file, dbug_uint line);
 
 /*
  *	The user may specify a list of functions to trace or
@@ -235,8 +225,8 @@ struct link
 struct state
 {
     int flags;						   /* Current state flags */
-    int maxdepth;					   /* Current maximum trace depth */
-    uint delay;						   /* Delay after each output line */
+    int DBUG_MAXdepth;					   /* Current DBUG_MAXimum trace depth */
+    dbug_uint delay;						   /* Delay after each output line */
     int sub_level;					   /* Sub this from code_state->level */
     FILE *out_file;					   /* Current output stream */
     FILE *prof_file;					   /* Current profiling stream */
@@ -254,7 +244,7 @@ struct state
  */
 
 
-static my_bool init_done = FALSE;			   /* Set to TRUE when initialization done */
+static bool init_done = false;			   /* Set to true when initialization done */
 static struct state *stack = 0;
 
 typedef struct st_code_state
@@ -278,7 +268,7 @@ typedef struct st_code_state
  *	_db_doprnt_().
  */
 
-    uint u_line;					   /* User source code line number */
+    dbug_uint u_line;					   /* User source code line number */
     const char *u_keyword;				   /* Keyword for current macro */
     int locked;						   /* If locked with _db_lock_file */
 }
@@ -294,7 +284,7 @@ static void DBUGOpenFile(const char *name, int append);
 	/* Open profile output stream */
 static FILE *OpenProfile(const char *name);
 	/* Profile if asked for it */
-static BOOLEAN DoProfile(void);
+static bool DoProfile(void);
 #endif
 	/* Return current user time (ms) */
 #ifndef THREAD
@@ -305,10 +295,10 @@ static void CloseFile(FILE * fp);
 	/* Push current debug state */
 static void PushState(void);
 	/* Test for tracing enabled */
-static BOOLEAN DoTrace(CODE_STATE * state);
+static bool DoTrace(CODE_STATE * state);
 	/* Test to see if file is writable */
 #if !(!defined(HAVE_ACCESS) || defined(MSDOS))
-static BOOLEAN Writable(char *pathname);
+static bool Writable(char *pathname);
 	/* Change file owner and group */
 static void ChangeOwner(char *pathname);
 	/* Allocate memory for runtime support */
@@ -316,10 +306,10 @@ static void ChangeOwner(char *pathname);
 static char *DbugMalloc(int size);
 	/* Remove leading pathname components */
 static char *BaseName(const char *pathname);
-static void DoPrefix(uint line);
+static void DoPrefix(dbug_uint line);
 static void FreeList(struct link *linkp);
 static void Indent(int indent);
-static BOOLEAN InList(struct link *linkp, const char *cp);
+static bool InList(struct link *linkp, const char *cp);
 static void dbug_flush(CODE_STATE *);
 static void DbugExit(const char *why);
 static int DelayArg(int value);
@@ -343,8 +333,8 @@ static char *static_strtok(char *s1, char chr);
 
 #undef EXISTS
 #if !defined(HAVE_ACCESS) || defined(MSDOS)
-#define EXISTS(pathname) (FALSE)			   /* Assume no existance */
-#define Writable(name) (TRUE)
+#define EXISTS(pathname) (false)			   /* Assume no existance */
+#define Writable(name) (true)
 #else
 #define EXISTS(pathname)	 (access (pathname, F_OK) == 0)
 #define WRITABLE(pathname)	 (access (pathname, W_OK) == 0)
@@ -358,7 +348,7 @@ static char *static_strtok(char *s1, char chr);
  */
 
 #if defined(unix) || defined(xenix) || defined(VMS) || defined(__NetBSD__)
-# define Delay(A) sleep((uint) A)
+# define Delay(A) sleep((dbug_uint) A)
 #elif defined(AMIGA)
 IMPORT int Delay();					   /* Pause for given number of ticks */
 #else
@@ -507,7 +497,7 @@ static CODE_STATE static_code_state = { 0, 0, "?func", "?file", NULL, 0, NULL,
  *
  *		t	Enable function call/exit trace lines.
  *			May be followed by a list (containing only
- *			one modifier) giving a numeric maximum
+ *			one modifier) giving a numeric DBUG_MAXimum
  *			trace level, beyond which no output will
  *			occur for either debugging or tracing
  *			macros.  The default is a compile time
@@ -551,7 +541,7 @@ _db_push_(const char *control)
     for (; scan != NULL; scan = static_strtok((char *) NULL, ':')) {
 	switch (*scan++) {
 	case 'd':
-	    _db_on_ = TRUE;
+	    _db_on_ = true;
 	    stack->flags |= DEBUG_ON;
 	    if (*scan++ == ',') {
 		stack->keywords = ListParse(scan);
@@ -578,7 +568,7 @@ _db_push_(const char *control)
 	    break;
 #ifndef THREAD
 	case 'g':
-	    _db_pon_ = TRUE;
+	    _db_pon_ = true;
 	    if (OpenProfile(PROF_FILE)) {
 		stack->flags |= PROFILE_ON;
 		if (*scan++ == ',')
@@ -624,7 +614,7 @@ _db_push_(const char *control)
 	    stack->flags |= TRACE_ON;
 	    if (*scan++ == ',') {
 		temp = ListParse(scan);
-		stack->maxdepth = atoi(temp->str);
+		stack->DBUG_MAXdepth = atoi(temp->str);
 		FreeList(temp);
 	    }
 	    break;
@@ -728,10 +718,10 @@ _db_pop_()
 void
 _db_enter_(const char *_func_,
     const char *_file_,
-    uint _line_,
+    dbug_uint _line_,
     const char **_sfunc_,
     const char **_sfile_,
-    uint * _slevel_, char ***_sframep_ __attribute__ ((unused)))
+    dbug_uint * _slevel_, char ***_sframep_ __attribute__ ((unused)))
 {
     register CODE_STATE *state;
 
@@ -763,7 +753,7 @@ _db_enter_(const char *_func_,
 	    (void) fprintf(_db_pfp_, PROF_SFMT, state->framep, stackused,
 		*_sfunc_);
 #else
-	    (void) fprintf(_db_pfp_, PROF_SFMT, (ulong) state->framep,
+	    (void) fprintf(_db_pfp_, PROF_SFMT, (dbug_ulong) state->framep,
 		stackused, state->func);
 #endif
 	    (void) fflush(_db_pfp_);
@@ -809,8 +799,8 @@ _db_enter_(const char *_func_,
  */
 
 void
-_db_return_(uint _line_,
-    const char **_sfunc_, const char **_sfile_, uint * _slevel_)
+_db_return_(dbug_uint _line_,
+    const char **_sfunc_, const char **_sfile_, dbug_uint * _slevel_)
 {
     CODE_STATE *state;
 
@@ -877,7 +867,7 @@ _db_return_(uint _line_,
  */
 
 void
-_db_pargs_(uint _line_, const char *keyword)
+_db_pargs_(dbug_uint _line_, const char *keyword)
 {
     CODE_STATE *state = code_state();
     state->u_line = _line_;
@@ -904,7 +894,7 @@ _db_pargs_(uint _line_, const char *keyword)
  *	printing of the arguments via the format string.  The line number
  *	of the DBUG macro in the source is found in u_line.
  *
- *	Note that the format string SHOULD NOT include a terminating
+ *	Note that the format string SHOULD NOT include a terDBUG_MINating
  *	newline, this is supplied automatically.
  *
  */
@@ -956,11 +946,11 @@ _db_doprnt_(const char *format, ...)
  *
  *  DESCRIPTION
  *  Dump N characters in a binary array.
- *  Is used to examine corrputed memory or arrays.
+ *  Is used to exaDBUG_MINe corrputed memory or arrays.
  */
 
 void
-_db_dump_(uint _line_, const char *keyword, const char *memory, uint length)
+_db_dump_(dbug_uint _line_, const char *keyword, const char *memory, dbug_uint length)
 {
     int pos;
     char dbuff[90];
@@ -973,17 +963,17 @@ _db_dump_(uint _line_, const char *keyword, const char *memory, uint length)
 	DoPrefix(_line_);
 	if (TRACING) {
 	    Indent(state->level + 1);
-	    pos = min(max(state->level - stack->sub_level, 0) * INDENT, 80);
+	    pos = DBUG_MIN(DBUG_MAX(state->level - stack->sub_level, 0) * INDENT, 80);
 	} else {
 	    fprintf(_db_fp_, "%s: ", state->func);
 	}
 	sprintf(dbuff, "%s: Memory: %lx  Bytes: (%d)\n",
-	    keyword, (ulong) memory, length);
+	    keyword, (dbug_ulong) memory, length);
 	(void) fputs(dbuff, _db_fp_);
 
 	pos = 0;
 	while (length-- > 0) {
-	    uint tmp = *((unsigned char *) memory++);
+	    dbug_uint tmp = *((unsigned char *) memory++);
 	    if ((pos += 3) >= 80) {
 		fputc('\n', _db_fp_);
 		pos = 3;
@@ -1052,13 +1042,13 @@ ListParse(char *ctlp)
  *
  *  SYNOPSIS
  *
- *	static BOOLEAN InList (linkp, cp)
+ *	static bool InList (linkp, cp)
  *	struct link *linkp;
  *	char *cp;
  *
  *  DESCRIPTION
  *
- *	Tests the string pointed to by "cp" to determine if it is in
+ *	Tests the string pointed to by "cp" to deterDBUG_MINe if it is in
  *	the list pointed to by "linkp".  Linkp points to the first
  *	link in the list.  If linkp is NULL then the string is treated
  *	as if it is in the list (I.E all strings are in the null list).
@@ -1069,19 +1059,19 @@ ListParse(char *ctlp)
  *
  */
 
-static BOOLEAN
+static bool
 InList(struct link *linkp, const char *cp)
 {
     REGISTER struct link *scan;
-    REGISTER BOOLEAN result;
+    REGISTER bool result;
 
     if (linkp == NULL) {
-	result = TRUE;
+	result = true;
     } else {
-	result = FALSE;
+	result = false;
 	for (scan = linkp; scan != NULL; scan = scan->next_link) {
 	    if (STREQ(scan->str, cp)) {
-		result = TRUE;
+		result = true;
 		break;
 	    }
 	}
@@ -1119,13 +1109,13 @@ PushState()
 
     if (!init_done) {
 	init_dbug_state();
-	init_done = TRUE;
+	init_done = true;
     }
     (void) code_state();				   /* Alloc memory */
     new_malloc = (struct state *) DbugMalloc(sizeof(struct state));
     new_malloc->flags = 0;
     new_malloc->delay = 0;
-    new_malloc->maxdepth = MAXDEPTH;
+    new_malloc->DBUG_MAXdepth = DBUG_MAXDEPTH;
     new_malloc->sub_level = 0;
     new_malloc->out_file = stderr;
     new_malloc->prof_file = (FILE *) 0;
@@ -1145,28 +1135,28 @@ PushState()
  *
  *  SYNOPSIS
  *
- *	static BOOLEAN DoTrace (stack)
+ *	static bool DoTrace (stack)
  *
  *  DESCRIPTION
  *
  *	Checks to see if tracing is enabled based on whether the
- *	user has specified tracing, the maximum trace depth has
+ *	user has specified tracing, the DBUG_MAXimum trace depth has
  *	not yet been reached, the current function is selected,
- *	and the current process is selected.  Returns TRUE if
- *	tracing is enabled, FALSE otherwise.
+ *	and the current process is selected.  Returns true if
+ *	tracing is enabled, false otherwise.
  *
  */
 
-static BOOLEAN
+static bool
 DoTrace(CODE_STATE * state)
 {
-    register BOOLEAN trace = FALSE;
+    register bool trace = false;
 
     if (TRACING &&
-	state->level <= stack->maxdepth &&
+	state->level <= stack->DBUG_MAXdepth &&
 	InList(stack->functions, state->func) &&
 	InList(stack->processes, _db_process_))
-	trace = TRUE;
+	trace = true;
     return (trace);
 }
 
@@ -1178,32 +1168,32 @@ DoTrace(CODE_STATE * state)
  *
  *  SYNOPSIS
  *
- *	static BOOLEAN DoProfile ()
+ *	static bool DoProfile ()
  *
  *  DESCRIPTION
  *
  *	Checks to see if profiling is enabled based on whether the
- *	user has specified profiling, the maximum trace depth has
+ *	user has specified profiling, the DBUG_MAXimum trace depth has
  *	not yet been reached, the current function is selected,
- *	and the current process is selected.  Returns TRUE if
- *	profiling is enabled, FALSE otherwise.
+ *	and the current process is selected.  Returns true if
+ *	profiling is enabled, false otherwise.
  *
  */
 
 #ifndef THREAD
-static BOOLEAN
+static bool
 DoProfile()
 {
-    REGISTER BOOLEAN profile;
+    REGISTER bool profile;
     CODE_STATE *state;
     state = code_state();
 
-    profile = FALSE;
+    profile = false;
     if (PROFILING &&
-	state->level <= stack->maxdepth &&
+	state->level <= stack->DBUG_MAXdepth &&
 	InList(stack->p_functions, state->func) &&
 	InList(stack->processes, _db_process_))
-	profile = TRUE;
+	profile = true;
     return (profile);
 }
 #endif
@@ -1216,40 +1206,40 @@ DoProfile()
  *
  *  SYNOPSIS
  *
- *	BOOLEAN _db_keyword_ (keyword)
+ *	bool _db_keyword_ (keyword)
  *	char *keyword;
  *
  *  DESCRIPTION
  *
- *	Test a keyword to determine if it is in the currently active
+ *	Test a keyword to deterDBUG_MINe if it is in the currently active
  *	keyword list.  As with the function list, a keyword is accepted
  *	if the list is null, otherwise it must match one of the list
  *	members.  When debugging is not on, no keywords are accepted.
- *	After the maximum trace level is exceeded, no keywords are
+ *	After the DBUG_MAXimum trace level is exceeded, no keywords are
  *	accepted (this behavior subject to change).  Additionally,
  *	the current function and process must be accepted based on
  *	their respective lists.
  *
- *	Returns TRUE if keyword accepted, FALSE otherwise.
+ *	Returns true if keyword accepted, false otherwise.
  *
  */
 
-BOOLEAN
+bool
 _db_keyword_(const char *keyword)
 {
-    REGISTER BOOLEAN result;
+    REGISTER bool result;
     CODE_STATE *state;
 
     if (!init_done)
 	_db_push_("");
     state = code_state();
-    result = FALSE;
+    result = false;
     if (DEBUGGING &&
-	state->level <= stack->maxdepth &&
+	state->level <= stack->DBUG_MAXdepth &&
 	InList(stack->functions, state->func) &&
 	InList(stack->keywords, keyword) &&
 	InList(stack->processes, _db_process_))
-	result = TRUE;
+	result = true;
     return (result);
 }
 
@@ -1266,7 +1256,7 @@ _db_keyword_(const char *keyword)
  *  DESCRIPTION
  *
  *	Indent a line to the given level.  Note that this is
- *	a simple minded but portable implementation.
+ *	a simple DBUG_MINded but portable implementation.
  *	There are better ways.
  *
  *	Also, the indent must be scaled by the compile time option
@@ -1279,7 +1269,7 @@ Indent(int indent)
 {
     REGISTER int count;
 
-    indent = max(indent - 1 - stack->sub_level, 0) * INDENT;
+    indent = DBUG_MAX(indent - 1 - stack->sub_level, 0) * INDENT;
     for (count = 0; count < indent; count++) {
 	if ((count % INDENT) == 0)
 	    fputc('|', _db_fp_);
@@ -1372,7 +1362,7 @@ StrDup(const char *str)
  */
 
 static void
-DoPrefix(uint _line_)
+DoPrefix(dbug_uint _line_)
 {
     CODE_STATE *state;
     state = code_state();
@@ -1424,7 +1414,7 @@ static void
 DBUGOpenFile(const char *name, int append)
 {
     REGISTER FILE *fp;
-    REGISTER BOOLEAN newfile;
+    REGISTER bool newfile;
 
     if (name != NULL) {
 	strcpy(stack->name, name);
@@ -1487,7 +1477,7 @@ static FILE *
 OpenProfile(const char *name)
 {
     REGISTER FILE *fp;
-    REGISTER BOOLEAN newfile;
+    REGISTER bool newfile;
 
     fp = 0;
     if (!Writable(name)) {
@@ -1660,8 +1650,8 @@ BaseName(const char *pathname)
     /*buf fix FN_LIBCHAR to FN_PATHSEP*/
    /* base = strrchr(pathname, FN_LIBCHAR); */
    base = strrchr(pathname, FN_PATHSEP);
-    if (base++ == NullS)
-	base = pathname;
+    if (base == NULL || base++ == NullS)
+        base = pathname;
     return ((char *) base);
 }
 
@@ -1673,7 +1663,7 @@ BaseName(const char *pathname)
  *
  *  SYNOPSIS
  *
- *	static BOOLEAN Writable (pathname)
+ *	static bool Writable (pathname)
  *	char *pathname;
  *
  *  DESCRIPTION
@@ -1684,24 +1674,24 @@ BaseName(const char *pathname)
  *	of checking the file for write access with the real user id,
  *	or checking the directory where the file will be created.
  *
- *	Returns TRUE if the user would normally be allowed write or
- *	create access to the named file.  Returns FALSE otherwise.
+ *	Returns true if the user would normally be allowed write or
+ *	create access to the named file.  Returns false otherwise.
  *
  */
 
 
 #ifndef Writable
 
-static BOOLEAN
+static bool
 Writable(char *pathname)
 {
-    REGISTER BOOLEAN granted;
+    REGISTER bool granted;
     REGISTER char *lastslash;
 
-    granted = FALSE;
+    granted = false;
     if (EXISTS(pathname)) {
 	if (WRITABLE(pathname)) {
-	    granted = TRUE;
+	    granted = true;
 	}
     } else {
 	lastslash = strrchr(pathname, '/');
@@ -1711,7 +1701,7 @@ Writable(char *pathname)
 	    pathname = ".";
 	}
 	if (WRITABLE(pathname)) {
-	    granted = TRUE;
+	    granted = true;
 	}
 	if (lastslash != NULL) {
 	    *lastslash = '/';
@@ -1840,7 +1830,7 @@ _db_longjmp_()
  *	argument in ticks (50 per second).  On unix, the sleep
  *	command takes seconds.	Thus a value of "10", for one
  *	second of delay, gets converted to 50 on the amiga, and 1
- *	on unix.  Other systems will need to use a timing loop.
+ *	on unix.  Other systems will need to use a tiDBUG_MINg loop.
  *
  */
 
@@ -1851,7 +1841,7 @@ _db_longjmp_()
 static int
 DelayArg(int value)
 {
-    uint delayarg = 0;
+    dbug_uint delayarg = 0;
 
 #if (unix || xenix)
     delayarg = value / 10;				   /* Delay is in seconds for sleep () */
@@ -1865,7 +1855,7 @@ DelayArg(int value)
 
 /*
  *	A dummy delay stub for systems that do not support delays.
- *	With a little work, this can be turned into a timing loop.
+ *	With a little work, this can be turned into a tiDBUG_MINg loop.
  */
 
 #if ! defined(Delay) && ! defined(AMIGA)
@@ -1985,7 +1975,7 @@ Clock()
 
 #elif defined(MSDOS) || defined(WIN32) || defined(OS2)
 
-static ulong
+static dbug_ulong
 Clock()
 {
     return clock() * (CLK_TCK);
@@ -1995,11 +1985,11 @@ Clock()
 struct DateStamp
 {							   /* Yes, this is a hack, but doing it right */
     long ds_Days;					   /* is incredibly ugly without splitting this */
-    long ds_Minute;					   /* off into a separate file */
+    long ds_DBUG_MINute;					   /* off into a separate file */
     long ds_Tick;
 };
 
-static int first_clock = TRUE;
+static int first_clock = true;
 static struct DateStamp begin;
 static struct DateStamp elapsed;
 
@@ -2012,14 +2002,14 @@ Clock()
 
     now = (struct DateStamp *) AllocMem((long) sizeof(struct DateStamp), 0L);
     if (now != NULL) {
-	if (first_clock == TRUE) {
-	    first_clock = FALSE;
+	if (first_clock == true) {
+	    first_clock = false;
 	    (void) DateStamp(now);
 	    begin = *now;
 	}
 	(void) DateStamp(now);
 	millisec = 24 * 3600 * (1000 / HZ) * (now->ds_Days - begin.ds_Days);
-	millisec += 60 * (1000 / HZ) * (now->ds_Minute - begin.ds_Minute);
+	millisec += 60 * (1000 / HZ) * (now->ds_DBUG_MINute - begin.ds_DBUG_MINute);
 	millisec += (1000 / HZ) * (now->ds_Tick - begin.ds_Tick);
 	(void) FreeMem(now, (long) sizeof(struct DateStamp));
     }
