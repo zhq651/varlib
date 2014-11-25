@@ -10,11 +10,8 @@
 #include <string.h>
 #include <wchar.h>
 
-//#include "base/logging.h"
-#ifndef DCHECK
-#include <assert.h>
-#define DCHECK assert
-#endif
+#include "base/logging.h"
+
 namespace base {
 
 // Chromium code style is to not use malloc'd strings; this is only for use

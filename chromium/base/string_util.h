@@ -450,6 +450,7 @@ std::string Uint64ToString(uint64 value);
 std::wstring Uint64ToWString(uint64 value);
 // The DoubleToString methods convert the double to a string format that
 // ignores the locale.  If you want to use locale specific formatting, use ICU.
+
 #ifdef DOUBLE_TO_STRING
 std::string DoubleToString(double value);
 std::wstring DoubleToWString(double value);

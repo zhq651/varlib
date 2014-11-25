@@ -3,11 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
-//#include "base/logging.h"
-#ifndef DCHECK
-#include <assert.h>
-#define DCHECK assert
-#endif
+#include "base/logging.h"
+
 // These includes are just for the *Hack functions, and should be removed
 // when those functions are removed.
 #include "base/string_piece.h"

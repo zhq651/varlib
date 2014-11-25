@@ -128,9 +128,10 @@ bool IsFilenameLegal(const string16& file_name);
 // timestmap of file creation time. If you need to avoid such
 // mis-detection perfectly, you should wait one second before
 // obtaining |file_time|.
-//int CountFilesCreatedAfter(const FilePath& path,
-//                           const base::Time& file_time);
-
+#ifdef BASE_TIME
+int CountFilesCreatedAfter(const FilePath& path,
+                           const base::Time& file_time);
+#endif
 // Deletes the given path, whether it's a file or a directory.
 // If it's a directory, it's perfectly happy to delete all of the
 // directory's contents.  Passing true to recursive deletes

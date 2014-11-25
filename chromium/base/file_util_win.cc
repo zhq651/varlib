@@ -11,14 +11,12 @@
 #include <string>
 
 #include "base/file_path.h"
-//#include "base/logging.h"
-#ifndef DCHECK
-#include <assert.h>
-#define DCHECK assert
-#endif
+#include "base/logging.h"
 #include "base/scoped_handle.h"
 #include "base/string_util.h"
-//#include "base/time.h"
+#ifdef BASE_TIME
+#include "base/time.h"
+#endif
 #include "base/win_util.h"
 
 namespace file_util {
@@ -43,35 +41,36 @@ bool AbsolutePath(FilePath* path) {
   *path = FilePath(file_path_buf);
   return true;
 }
-//
-//int CountFilesCreatedAfter(const FilePath& path,
-//                           const base::Time& comparison_time) {
-//  int file_count = 0;
-//  FILETIME comparison_filetime(comparison_time.ToFileTime());
-//
-//  WIN32_FIND_DATA find_file_data;
-//  // All files in given dir
-//  std::wstring filename_spec = path.Append(L"*").value();
-//  HANDLE find_handle = FindFirstFile(filename_spec.c_str(), &find_file_data);
-//  if (find_handle != INVALID_HANDLE_VALUE) {
-//    do {
-//      // Don't count current or parent directories.
-//      if ((wcscmp(find_file_data.cFileName, L"..") == 0) ||
-//          (wcscmp(find_file_data.cFileName, L".") == 0))
-//        continue;
-//
-//      long result = CompareFileTime(&find_file_data.ftCreationTime,
-//                                    &comparison_filetime);
-//      // File was created after or on comparison time
-//      if ((result == 1) || (result == 0))
-//        ++file_count;
-//    } while (FindNextFile(find_handle,  &find_file_data));
-//    FindClose(find_handle);
-//  }
-//
-//  return file_count;
-//}
+#ifdef BASE_TIME
 
+int CountFilesCreatedAfter(const FilePath& path,
+                           const base::Time& comparison_time) {
+  int file_count = 0;
+  FILETIME comparison_filetime(comparison_time.ToFileTime());
+
+  WIN32_FIND_DATA find_file_data;
+  // All files in given dir
+  std::wstring filename_spec = path.Append(L"*").value();
+  HANDLE find_handle = FindFirstFile(filename_spec.c_str(), &find_file_data);
+  if (find_handle != INVALID_HANDLE_VALUE) {
+    do {
+      // Don't count current or parent directories.
+      if ((wcscmp(find_file_data.cFileName, L"..") == 0) ||
+          (wcscmp(find_file_data.cFileName, L".") == 0))
+        continue;
+
+      long result = CompareFileTime(&find_file_data.ftCreationTime,
+                                    &comparison_filetime);
+      // File was created after or on comparison time
+      if ((result == 1) || (result == 0))
+        ++file_count;
+    } while (FindNextFile(find_handle,  &find_file_data));
+    FindClose(find_handle);
+  }
+
+  return file_count;
+}
+#endif
 bool Delete(const FilePath& path, bool recursive) {
   if (path.value().length() >= MAX_PATH)
     return false;
@@ -602,9 +601,9 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
                                0,
                                NULL));
   if (file == INVALID_HANDLE_VALUE) {
-    //LOG(WARNING) << "CreateFile failed for path " << filename.value() <<
-        //" error code=" << GetLastError() <<
-        //" error text=" << win_util::FormatLastWin32Error();
+    LOG(WARNING) << "CreateFile failed for path " << filename.value() <<
+        " error code=" << GetLastError() <<
+        " error text=" << win_util::FormatLastWin32Error();
     return -1;
   }
 
@@ -615,13 +614,13 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
 
   if (!result) {
     // WriteFile failed.
-    //LOG(WARNING) << "writing file " << filename.value() <<
-        //" failed, error code=" << GetLastError() <<
-        //" description=" << win_util::FormatLastWin32Error();
+    LOG(WARNING) << "writing file " << filename.value() <<
+        " failed, error code=" << GetLastError() <<
+        " description=" << win_util::FormatLastWin32Error();
   } else {
     // Didn't write all the bytes.
-    //LOG(WARNING) << "wrote" << written << " bytes to " <<
-    //    filename.value() << " expected " << size;
+    LOG(WARNING) << "wrote" << written << " bytes to " <<
+        filename.value() << " expected " << size;
   }
   return -1;
 }

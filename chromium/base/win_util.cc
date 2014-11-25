@@ -6,18 +6,13 @@
 
 #include <sddl.h>
 
-//#include "base/logging.h"
-#ifndef DCHECK
-#include <assert.h>
-#define DCHECK assert
-#endif
+#include "base/logging.h"
 #include "base/registry.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 
 #pragma warning(disable:4996)
-
 namespace win_util {
 
 #define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(struct_name, member) \
@@ -45,7 +40,7 @@ WinVersion GetWinVersion() {
   if (!checked_version) {
     OSVERSIONINFOEX version_info;
     version_info.dwOSVersionInfoSize = sizeof version_info;
-	GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&version_info));
+    GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&version_info));
     if (version_info.dwMajorVersion == 5) {
       switch (version_info.dwMinorVersion) {
         case 0:
@@ -86,7 +81,7 @@ void GetServicePackLevel(int* major, int* minor) {
   if (!checked_version) {
     OSVERSIONINFOEX version_info = {0};
     version_info.dwOSVersionInfoSize = sizeof(version_info);
-	GetVersionEx(reinterpret_cast<OSVERSIONINFOW*>(&version_info));
+    GetVersionEx(reinterpret_cast<OSVERSIONINFOW*>(&version_info));
     service_pack_major = version_info.wServicePackMajor;
     service_pack_minor = version_info.wServicePackMinor;
     checked_version = true;

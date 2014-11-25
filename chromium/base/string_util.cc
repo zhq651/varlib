@@ -21,11 +21,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-//#include "base/logging.h"
-//#include "base/singleton.h"
-#ifdef DOUBLE_TO_STRING
+#include "base/logging.h"
+#include "base/singleton.h"
 #include "base/third_party/dmg_fp/dmg_fp.h"
-#endif
 
 namespace {
 
@@ -220,7 +218,6 @@ class HexString16ToLongTraits {
   }
 };
 #ifdef DOUBLE_TO_STRING
-
 class StringToDoubleTraits {
  public:
   typedef std::string string_type;
@@ -260,7 +257,6 @@ class String16ToDoubleTraits {
   }
 };
 #endif
-
 }  // namespace
 
 
@@ -307,17 +303,17 @@ bool IsWprintfFormatPortable(const wchar_t* format) {
 }  // namespace base
 
 
-//const std::string& EmptyString() {
-//  return Singleton<EmptyStrings>::get()->s;
-//}
-//
-//const std::wstring& EmptyWString() {
-//  return Singleton<EmptyStrings>::get()->ws;
-//}
-//
-//const string16& EmptyString16() {
-//  return Singleton<EmptyStrings>::get()->s16;
-//}
+const std::string& EmptyString() {
+  return Singleton<EmptyStrings>::get()->s;
+}
+
+const std::wstring& EmptyWString() {
+  return Singleton<EmptyStrings>::get()->ws;
+}
+
+const string16& EmptyString16() {
+  return Singleton<EmptyStrings>::get()->s16;
+}
 
 const wchar_t kWhitespaceWide[] = {
   0x0009,  // <control-0009> to <control-000D>
@@ -760,7 +756,7 @@ DataUnits GetByteDisplayUnits(int64 bytes) {
   };
 
   if (bytes < 0) {
-    //NOTREACHED() << "Negative bytes value";
+    NOTREACHED() << "Negative bytes value";
     return DATA_UNITS_BYTE;
   }
 
@@ -795,7 +791,7 @@ std::wstring FormatBytesInternal(int64 bytes,
                                  bool show_units,
                                  const wchar_t* const* suffix) {
   if (bytes < 0) {
-    //NOTREACHED() << "Negative bytes value";
+    NOTREACHED() << "Negative bytes value";
     return std::wstring();
   }
 
@@ -945,7 +941,7 @@ static void StringAppendVT(StringType* dst,
 #endif
       {
         // If an error other than overflow occurred, it's never going to work.
-        //DLOG(WARNING) << "Unable to printf the requested string due to error.";
+        DLOG(WARNING) << "Unable to printf the requested string due to error.";
         return;
       }
       // Try doubling the buffer size.
@@ -959,7 +955,7 @@ static void StringAppendVT(StringType* dst,
       // That should be plenty, don't try anything larger.  This protects
       // against huge allocations when using vsnprintfT implementations that
       // return -1 for reasons other than overflow without setting errno.
-      //DLOG(WARNING) << "Unable to printf the requested string due to size.";
+      DLOG(WARNING) << "Unable to printf the requested string due to size.";
       return;
     }
 
@@ -1038,7 +1034,7 @@ struct IntToStringT {
         return STR(it, outbuf.end());
       }
     }
-    //NOTREACHED();
+    NOTREACHED();
     return STR();
   }
 };
@@ -1086,7 +1082,6 @@ std::wstring Uint64ToWString(uint64 value) {
       IntToString(value);
 }
 #ifdef DOUBLE_TO_STRING
-
 std::string DoubleToString(double value) {
   // According to g_fmt.cc, it is sufficient to declare a buffer of size 32.
   char buffer[32];
@@ -1098,7 +1093,6 @@ std::wstring DoubleToWString(double value) {
   return ASCIIToWide(DoubleToString(value));
 }
 #endif
-
 void StringAppendV(std::string* dst, const char* format, va_list ap) {
   StringAppendVT(dst, format, ap);
 }
@@ -1293,7 +1287,7 @@ string16 ReplaceStringPlaceholders(const string16& format_string,
     if ('$' == *i) {
       if (i + 1 != format_string.end()) {
         ++i;
-        //DCHECK('$' == *i || '1' <= *i) << "Invalid placeholder: " << *i;
+        DCHECK('$' == *i || '1' <= *i) << "Invalid placeholder: " << *i;
         if ('$' == *i) {
           formatted.push_back('$');
         } else {
@@ -1561,7 +1555,6 @@ int HexStringToInt(const string16& value) {
   return result;
 }
 #ifdef DOUBLE_TO_STRING
-
 bool StringToDouble(const std::string& input, double* output) {
   return StringToNumber<StringToDoubleTraits>(input, output);
 }

@@ -12,12 +12,9 @@
 #include <fstream>
 
 #include "base/file_path.h"
-//#include "base/logging.h"
+#include "base/logging.h"
 #include "base/string_util.h"
-#ifndef DCHECK
-#include <assert.h>
-#define DCHECK assert
-#endif
+
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
 
@@ -134,7 +131,7 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 
     if ((file1.eof() != file2.eof()) ||
         (file1.gcount() != file2.gcount()) ||
-        (memcmp(buffer1, buffer2, file1.gcount()))) {
+        (memcmp(buffer1, buffer2, static_cast<size_t>(file1.gcount())))) {
       file1.close();
       file2.close();
       return false;
@@ -307,7 +304,7 @@ bool AbsolutePath(std::wstring* path_str) {
 }
 void AppendToPath(std::wstring* path, const std::wstring& new_ending) {
   if (!path) {
-    //NOTREACHED();
+    NOTREACHED();
     return;  // Don't crash in this function in release builds.
   }
 
