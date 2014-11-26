@@ -52,11 +52,7 @@
 #ifndef BASE_PRTIME_H__
 #define BASE_PRTIME_H__
 
-//#include "base/logging.h"
-#ifndef DCHECK
-#include <assert.h>
-#define DCHECK assert
-#endif
+#include "base/logging.h"
 #include "base/third_party/nspr/prtypes.h"
 
 #define PR_ASSERT DCHECK

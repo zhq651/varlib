@@ -9,13 +9,7 @@
 
 #include "base/basictypes.h"
 //#include "base/logging.h"
-#ifndef DCHECK
-#include <assert.h>
-#define DCHECK assert
-#endif
-#ifndef NOTREACHED
-#define NOTREACHED() do{}while(false);
-#endif
+
 // Used so we always remember to close the handle.
 // The class interface matches that of ScopedStdioHandle in  addition to an
 // IsValid() method since invalid handles on windows can be either NULL or
@@ -75,7 +69,7 @@ class ScopedHandle {
   void Close() {
     if (handle_) {
       if (!::CloseHandle(handle_)) {
-        NOTREACHED();
+        //NOTREACHED();
       }
       handle_ = NULL;
     }

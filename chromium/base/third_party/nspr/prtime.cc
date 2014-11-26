@@ -113,7 +113,7 @@ PR_ImplodeTime(const PRExplodedTime *exploded)
     st.wMilliseconds = exploded->tm_usec/1000;
      // Convert to FILETIME.
     if (!SystemTimeToFileTime(&st, &ft)) {
-      //NOTREACHED() << "Unable to convert time";
+      NOTREACHED() << "Unable to convert time";
       return 0;
     }
     // Apply offsets.

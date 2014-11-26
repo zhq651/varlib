@@ -4,7 +4,7 @@
 
 #include "base/platform_thread.h"
 
-//#include "base/logging.h"
+#include "base/logging.h"
 #include "base/win_util.h"
 
 namespace {
@@ -94,12 +94,12 @@ bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
 
 // static
 void PlatformThread::Join(PlatformThreadHandle thread_handle) {
-  //DCHECK(thread_handle);
+  DCHECK(thread_handle);
 
   // Wait for the thread to exit.  It should already have terminated but make
   // sure this assumption is valid.
   DWORD result = WaitForSingleObject(thread_handle, INFINITE);
-  //DCHECK_EQ(WAIT_OBJECT_0, result);
+  DCHECK_EQ(WAIT_OBJECT_0, result);
 
   CloseHandle(thread_handle);
 }
