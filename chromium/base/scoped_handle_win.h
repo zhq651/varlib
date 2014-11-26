@@ -8,7 +8,7 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-//#include "base/logging.h"
+#include "base/logging.h"
 
 // Used so we always remember to close the handle.
 // The class interface matches that of ScopedStdioHandle in  addition to an
@@ -69,7 +69,7 @@ class ScopedHandle {
   void Close() {
     if (handle_) {
       if (!::CloseHandle(handle_)) {
-        //NOTREACHED();
+        NOTREACHED();
       }
       handle_ = NULL;
     }
