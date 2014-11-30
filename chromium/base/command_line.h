@@ -27,7 +27,23 @@
 #include "base/logging.h"
 
 class InProcessBrowserTest;
+//大致使用方法(win32):
+//构造函数为某个可执行程序的完整路径，可以为空字符串
+//初始化:
+//调用ParseFromString解析命令行，第一个参数为要执行的程序(不能带前缀)，后面的参数在win32下
+//前缀为-, -- ,/三个前缀符,后面的参数可以是键，或者键/值(for example:--key=value),如果参数不带前缀，
+//那么该参数会成功loose value
+//查询:
+//通过调用HasSwitch查找某个参数键,通过调用GetSwitchValue查找某个参数键/值,
+//通过调用GetLooseValues获取不带前缀符的参数
+//更新:
+//通过调用AppendArguments,AppendSwitch,AppendSwitchValue,AppendSwitchLooseValue更新命令行，如通过这些函数设置
+//之后然后想要创建一个进程可以调用函数command_line_string获取最后的命令行，调用win32下的
+//CreateProcess时第一个参数设置为NULL，第二个参数则设为command_line_string，可以参考process_util_win32.cc
 
+//CommandLine具有一个全局对象，需要在main函数中调用它的静态函数Init，不然会导致代码中部分
+//模块无法执行如logging,win32下由于有GetCommandLineW函数因此调用的参数可以设置为Init(0,NULL),
+//如果将CommandLine用在局部，即只是希望用于创建某个新进程请不要调用Init
 class CommandLine {
  public:
 #if defined(OS_WIN)
