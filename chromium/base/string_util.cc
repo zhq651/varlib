@@ -217,7 +217,7 @@ class HexString16ToLongTraits {
     return !str.empty() && !iswspace(str[0]);
   }
 };
-#ifdef DOUBLE_TO_STRING
+
 class StringToDoubleTraits {
  public:
   typedef std::string string_type;
@@ -256,7 +256,7 @@ class String16ToDoubleTraits {
     return !str.empty() && !iswspace(str[0]);
   }
 };
-#endif
+
 }  // namespace
 
 
@@ -1081,7 +1081,7 @@ std::wstring Uint64ToWString(uint64 value) {
   return IntToStringT<std::wstring, uint64, uint64, false>::
       IntToString(value);
 }
-#ifdef DOUBLE_TO_STRING
+
 std::string DoubleToString(double value) {
   // According to g_fmt.cc, it is sufficient to declare a buffer of size 32.
   char buffer[32];
@@ -1092,7 +1092,7 @@ std::string DoubleToString(double value) {
 std::wstring DoubleToWString(double value) {
   return ASCIIToWide(DoubleToString(value));
 }
-#endif
+
 void StringAppendV(std::string* dst, const char* format, va_list ap) {
   StringAppendVT(dst, format, ap);
 }
@@ -1554,7 +1554,7 @@ int HexStringToInt(const string16& value) {
   HexStringToInt(value, &result);
   return result;
 }
-#ifdef DOUBLE_TO_STRING
+
 bool StringToDouble(const std::string& input, double* output) {
   return StringToNumber<StringToDoubleTraits>(input, output);
 }
@@ -1574,7 +1574,7 @@ double StringToDouble(const string16& value) {
   StringToDouble(value, &result);
   return result;
 }
-#endif
+
 // The following code is compatible with the OpenBSD lcpy interface.  See:
 //   http://www.gratisoft.us/todd/papers/strlcpy.html
 //   ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/{wcs,str}lcpy.c

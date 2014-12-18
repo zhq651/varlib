@@ -450,11 +450,9 @@ std::string Uint64ToString(uint64 value);
 std::wstring Uint64ToWString(uint64 value);
 // The DoubleToString methods convert the double to a string format that
 // ignores the locale.  If you want to use locale specific formatting, use ICU.
-
-#ifdef DOUBLE_TO_STRING
 std::string DoubleToString(double value);
 std::wstring DoubleToWString(double value);
-#endif
+
 // Perform a best-effort conversion of the input string to a numeric type,
 // setting |*output| to the result of the conversion.  Returns true for
 // "perfect" conversions; returns false in the following cases:
@@ -485,10 +483,9 @@ bool HexStringToBytes(const string16& input, std::vector<uint8>* output);
 // NaN and inf) is undefined.  Otherwise, these behave the same as the integral
 // variants.  This expects the input string to NOT be specific to the locale.
 // If your input is locale specific, use ICU to read the number.
-#ifndef DOUBLE_TO_STRING
 bool StringToDouble(const std::string& input, double* output);
 bool StringToDouble(const string16& input, double* output);
-#endif
+
 // Convenience forms of the above, when the caller is uninterested in the
 // boolean return value.  These return only the |*output| value from the
 // above conversions: a best-effort conversion when possible, otherwise, 0.
@@ -498,10 +495,9 @@ int64 StringToInt64(const std::string& value);
 int64 StringToInt64(const string16& value);
 int HexStringToInt(const std::string& value);
 int HexStringToInt(const string16& value);
-#ifdef DOUBLE_TO_STRING
 double StringToDouble(const std::string& value);
 double StringToDouble(const string16& value);
-#endif
+
 // Return a C++ string given printf-like input.
 std::string StringPrintf(const char* format, ...);
 std::wstring StringPrintf(const wchar_t* format, ...);
