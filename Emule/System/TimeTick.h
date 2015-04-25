@@ -2,11 +2,12 @@
  * @file TimeTick.h
  * @brief calc the pc ticks
  * @author liangsijian
- * @version 
+ * @version {{version}}
  * @date 2015-04-25
  */
 #include <windows.h>
-
+#ifndef TIMETICK_H_2VXWAM0B
+#define TIMETICK_H_2VXWAM0B
 class CTimeTick
 {
 	CTimeTick(const CTimeTick& d);
@@ -33,3 +34,7 @@ private:
 	LARGE_INTEGER m_nTimeElapsed;
 	LARGE_INTEGER m_nTime;
 };
+
+
+#endif /* end of include guard: TIMETICK_H_2VXWAM0B */
+
