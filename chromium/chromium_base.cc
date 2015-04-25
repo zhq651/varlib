@@ -1,5 +1,3 @@
-#include "chromium_base.h"
-
 //chromium 最小子集，包含string_util lock command_ling base_path file_util logging
 #include "base/at_exit.cc"
 

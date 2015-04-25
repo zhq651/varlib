@@ -19,7 +19,7 @@
 #include "base/thread_local_win.cc"
 #include "base/thread.cc"
 #include "base/lazy_instance.cc"
-
+#include "base/object_watcher.cc"
 #include "base/pickle.cc"
 #include "base/histogram.cc"
 

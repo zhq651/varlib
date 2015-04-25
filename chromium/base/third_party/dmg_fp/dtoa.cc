@@ -646,7 +646,7 @@ multadd
 			Bfree(b);
 			b = b1;
 			}
-		b->x[wds++] = carry;
+		b->x[wds++] = static_cast<ULong>(carry);
 		b->wds = wds;
 		}
 	return b;
@@ -840,7 +840,7 @@ mult
 				*xc++ = z & FFFFFFFF;
 				}
 				while(x < xae);
-			*xc = carry;
+			*xc = static_cast<ULong>(carry);
 			}
 		}
 #else
@@ -3279,7 +3279,7 @@ strtod
 #ifdef Avoid_Underflow
 			if (bc.scale && y <= 2*P*Exp_msk1) {
 				if (aadj <= 0x7fffffff) {
-					if ((z = aadj) <= 0)
+					if ((z = static_cast<ULong>(aadj)) <= 0)
 						z = 1;
 					aadj = z;
 					aadj1 = bc.dsign ? aadj : -aadj;
@@ -3833,7 +3833,7 @@ dtoa
 			 */
 			dval(&eps) = 0.5/tens[ilim-1] - dval(&eps);
 			for(i = 0;;) {
-				L = dval(&u);
+				L = static_cast<long>(dval(&u));
 				dval(&u) -= L;
 				*s++ = '0' + (int)L;
 				if (dval(&u) < dval(&eps))
