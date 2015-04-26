@@ -1,3 +1,14 @@
+/**
+ * @file observer_list..h
+ * @brief observer patern
+ * @author liangsijian
+ * @version 
+ * @date 2015-04-26
+ */
+
+#ifndef OBSERVER_LIST_H_QVPXZT6K
+#define OBSERVER_LIST_H_QVPXZT6K
+
 #include <limits>
 #include <vector>
 #include <algorithm>
@@ -215,3 +226,6 @@ public:
     ObserverList<Foo>* observer_list;
     Adder adder;
 };
+
+
+#endif /* end of include guard: OBSERVER_LIST_H_QVPXZT6K */

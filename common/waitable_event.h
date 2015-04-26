@@ -1,3 +1,14 @@
+/**
+ * @file waitable_event.h
+ * @brief 
+ * @author liangsijian
+ * @version 
+ * @date 2015-04-26
+ */
+
+#ifndef WAITABLE_EVENT_H_BCPZO4MV
+#define WAITABLE_EVENT_H_BCPZO4MV
+
 #include <windows.h>
 static const int kNoTimeout = -1;
 class WaitableEvent{
@@ -50,10 +61,13 @@ public:
     // happening.
     static size_t WaitMany(WaitableEvent** waitables, size_t count);
 private:
-    WaitableEvent(const& other);
-    void operator = (const& other);
+    WaitableEvent(const WaitableEvent& other);
+    void operator = (const WaitableEvent& other);
 
     HANDLE handle_;
 
 
 };
+
+
+#endif /* end of include guard: WAITABLE_EVENT_H_BCPZO4MV */
