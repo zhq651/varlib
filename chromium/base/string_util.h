@@ -15,7 +15,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/string_piece.h"  // For implicit conversions.
-
+#include "base/sys_string_conversions.h"
 // Safe standard library wrappers for all platforms.
 
 namespace base {

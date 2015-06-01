@@ -62,8 +62,8 @@ time_t Time::ToTimeT() const {
 
 // static
 Time Time::FromDoubleT(double dt) {
-  return (dt * static_cast<double>(kMicrosecondsPerSecond)) +
-      kTimeTToMicrosecondsOffset;
+    return static_cast<int64>((dt * static_cast<double>(kMicrosecondsPerSecond)) +
+        kTimeTToMicrosecondsOffset);
 }
 
 double Time::ToDoubleT() const {
