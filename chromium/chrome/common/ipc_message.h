@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/pickle.h"
 
-#ifndef NDEBUG
-#define IPC_MESSAGE_LOG_ENABLED
-#endif
+//#ifndef NDEBUG
+//#define IPC_MESSAGE_LOG_ENABLED
+//#endif
 
 #if defined(OS_POSIX)
 #include "base/ref_counted.h"

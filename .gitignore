@@ -13,3 +13,8 @@
 *.lai
 *.la
 *.a
+*.zip
+*.rar
+*.7z
+*.obj
+*.pyc

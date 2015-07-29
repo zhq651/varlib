@@ -437,7 +437,7 @@ bool WaitForProcessesToExit(const std::wstring& executable_name,
   NamedProcessIterator iter(executable_name, filter);
   while (entry = iter.NextProcessEntry()) {
     DWORD remaining_wait =
-        std::max<int64>(0, wait_milliseconds - (GetTickCount() - start_time));
+        std::max<DWORD>(0, static_cast<DWORD>(wait_milliseconds )- (GetTickCount() - start_time));
     HANDLE process = OpenProcess(SYNCHRONIZE,
                                  FALSE,
                                  entry->th32ProcessID);
@@ -450,12 +450,12 @@ bool WaitForProcessesToExit(const std::wstring& executable_name,
 }
 
 bool WaitForSingleProcess(ProcessHandle handle, int64 wait_milliseconds) {
-  bool retval = WaitForSingleObject(handle, wait_milliseconds) == WAIT_OBJECT_0;
+  bool retval = WaitForSingleObject(handle, static_cast<DWORD>(wait_milliseconds)) == WAIT_OBJECT_0;
   return retval;
 }
 
 bool CrashAwareSleep(ProcessHandle handle, int64 wait_milliseconds) {
-  bool retval = WaitForSingleObject(handle, wait_milliseconds) == WAIT_TIMEOUT;
+  bool retval = WaitForSingleObject(handle, static_cast<DWORD>(wait_milliseconds)) == WAIT_TIMEOUT;
   return retval;
 }
 

@@ -79,7 +79,7 @@ std::wstring string2wstring(const std::string & rString, UINT codepage)
 		return L"";
 }
 
-std::string wstring2string(const std::wstring & rwString, UINT codepage)
+std::string wstring2string(const std::wstring & rwString, UINT codepage/*  = CP_ACP */)
 {
 	int len = WideCharToMultiByte(codepage, 0, rwString.c_str(), -1, NULL, 0, NULL, NULL);
 	if(len > 0)
