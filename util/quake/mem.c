@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <windows.h>
 #include "mem.h"
-#pragma warning(disable:4996)
+#include "q_shared.h"
+//#pragma warning(disable:4996)
 /*
 ==============================================================================
 
@@ -60,35 +61,35 @@ static	int		s_smallZoneTotal;
 
 void Z_CheckHeap( void );
 
-void Error(const char *error, ...)
-{
-    va_list argptr;
-    char	text[1024];
-    char	text2[1024];
-    int		err;
+//void Error(const char *error, ...)
+//{
+//    va_list argptr;
+//    char	text[1024];
+//    char	text2[1024];
+//    int		err;
+//
+//    err = GetLastError();
+//
+//    va_start(argptr, error);
+//    vsprintf_s(text, sizeof(text), error, argptr);
+//    va_end(argptr);
+//
+//    sprintf(text2, "%s\nGetLastError() = %i", text, err);
+//    MessageBoxA(NULL, text2, "Error", 0 /* MB_OK */);
+//
+//    exit(1);
+//}
 
-    err = GetLastError();
-
-    va_start(argptr, error);
-    vsprintf_s(text, sizeof(text), error, argptr);
-    va_end(argptr);
-
-    sprintf(text2, "%s\nGetLastError() = %i", text, err);
-    MessageBoxA(NULL, text2, "Error", 0 /* MB_OK */);
-
-    exit(1);
-}
-
-void Com_Error(int level, char *error, ...)
-{
-    va_list argptr;
-    char text[1024];
-
-    va_start(argptr, error);
-    vsprintf_s(text, sizeof(text), error, argptr);
-    va_end(argptr);
-    Error(text);
-} //end of the funcion Com_Error
+//void Com_Error(int level, char *error, ...)
+//{
+//    va_list argptr;
+//    char text[1024];
+//
+//    va_start(argptr, error);
+//    vsprintf_s(text, sizeof(text), error, argptr);
+//    va_end(argptr);
+//    Error(text);
+//} //end of the funcion Com_Error
 /*
 ========================
 Z_ClearZone

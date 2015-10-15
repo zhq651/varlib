@@ -2,16 +2,21 @@
 #define MEM_H_SHXYZWFO
 
 // parameters to the main Error routine
+#ifndef ERRORPARM_T_M
+
 typedef enum {
     ERR_NONE,
     ERR_FATAL,					// exit the entire game with a popup window
     ERR_DROP,					// print to console and disconnect from game
-    ERR_DISCONNECT,				// don't kill server
+    ERR_SERVERDISCONNECT,		// don't kill server
+    ERR_DISCONNECT,				// client disconnected from the server
     ERR_NEED_CD					// pop up the need-cd dialog
 } errorParm_t;
+#define ERRORPARM_T_M
+#endif // !ERRORPARM_T_M
 
 
-
+#ifndef MEMTAG_T_M
 typedef enum {
     TAG_FREE,
     TAG_GENERAL,
@@ -20,6 +25,8 @@ typedef enum {
     TAG_SMALL,
     TAG_STATIC
 } memtag_t;
+#define MEMTAG_T_M
+#endif
 
 
 void Com_InitSmallZoneMemory(void);
