@@ -336,11 +336,11 @@ void Snd_Memset (void* dest, const int val, const size_t count);
 #define Snd_Memset Com_Memset
 #endif
 
-#if !( defined __VECTORC )
-void Com_Memset (void* dest, const int val, const size_t count);
-void Com_Memcpy (void* dest, const void* src, const size_t count);
-#else
+#ifndef Com_Memset
 #define Com_Memset memset
+#endif
+
+#ifndef Com_Memcpy
 #define Com_Memcpy memcpy
 #endif
 
@@ -740,7 +740,20 @@ char	*Q_strrchr( const char* string, int c );
 
 // buffer size safe library replacements
 void	Q_strncpyz( char *dest, const char *src, int destsize );
-void	Q_strcat( char *dest, int size, const char *src );
+void	Q_strncat( char *dest, int size, const char *src );
+
+
+// String functions
+size_t  Q_strlen(const char *string);
+char   *Q_strcat(char *strDestination, const char *strSource);
+char   *Q_strcpy(char *strDestination, const char *strSource);
+int     Q_strcmp(const char *string1, const char *string2);
+char   *Q_strchr(const char *string, int c);
+char   *Q_strstr(const char *string, const char *strCharSet);
+char   *Q_strncpy(char *strDest, const char *strSource, size_t count);
+int     Q_tolower(int c);
+int     Q_toupper(int c);
+void *Q_memmove(void *dest, const void *src, size_t count);
 
 // strlen that discounts Quake color sequences
 int Q_PrintStrlen( const char *string );
@@ -795,6 +808,8 @@ void Info_NextPair(const char **s, char *key, char *value);
 void	QDECL Com_Error( int level, const char *error, ... );
 void	QDECL Com_Printf( const char *msg, ... );
 
+int Com_Filter(char *filter, char *name, int casesensitive);
+char *Com_StringContains(char *str1, char *str2, int casesensitive);
 
 /*
 ==========================================================
