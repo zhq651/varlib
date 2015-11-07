@@ -19,6 +19,171 @@ byte		cmd_text_buf[MAX_CMD_BUFFER];
 /*
 =============================================================================
 
+COMMAND BUFFER
+
+=============================================================================
+*/
+
+/*
+============
+Cbuf_Init
+============
+*/
+void Cbuf_Init(void)
+{
+    cmd_text.data = cmd_text_buf;
+    cmd_text.maxsize = MAX_CMD_BUFFER;
+    cmd_text.cursize = 0;
+}
+
+/*
+============
+Cbuf_AddText
+
+Adds command text at the end of the buffer, does NOT add a final \n
+============
+*/
+void Cbuf_AddText(const char *text) {
+    int		l;
+
+    l = strlen(text);
+
+    if (cmd_text.cursize + l >= cmd_text.maxsize)
+    {
+        Com_Printf("Cbuf_AddText: overflow\n");
+        return;
+    }
+    Com_Memcpy(&cmd_text.data[cmd_text.cursize], text, l);
+    cmd_text.cursize += l;
+}
+
+
+/*
+============
+Cbuf_InsertText
+
+Adds command text immediately after the current command
+Adds a \n to the text
+============
+*/
+void Cbuf_InsertText(const char *text) {
+    int		len;
+    int		i;
+
+    len = strlen(text) + 1;
+    if (len + cmd_text.cursize > cmd_text.maxsize) {
+        Com_Printf("Cbuf_InsertText overflowed\n");
+        return;
+    }
+
+    // move the existing command text
+    for (i = cmd_text.cursize - 1; i >= 0; i--) {
+        cmd_text.data[i + len] = cmd_text.data[i];
+    }
+
+    // copy the new text in
+    Com_Memcpy(cmd_text.data, text, len - 1);
+
+    // add a \n
+    cmd_text.data[len - 1] = '\n';
+
+    cmd_text.cursize += len;
+}
+
+
+/*
+============
+Cbuf_ExecuteText
+============
+*/
+void Cbuf_ExecuteText(int exec_when, const char *text)
+{
+    switch (exec_when)
+    {
+    case EXEC_NOW:
+        if (text && strlen(text) > 0) {
+            Cmd_ExecuteString(text);
+        }
+        else {
+            Cbuf_Execute();
+        }
+        break;
+    case EXEC_INSERT:
+        Cbuf_InsertText(text);
+        break;
+    case EXEC_APPEND:
+        Cbuf_AddText(text);
+        break;
+    default:
+        Com_Error(ERR_FATAL, "Cbuf_ExecuteText: bad exec_when");
+    }
+}
+
+/*
+============
+Cbuf_Execute
+============
+*/
+void Cbuf_Execute(void)
+{
+    int		i;
+    char	*text;
+    char	line[MAX_CMD_LINE];
+    int		quotes;
+
+    while (cmd_text.cursize)
+    {
+        if (cmd_wait)	{
+            // skip out while text still remains in buffer, leaving it
+            // for next frame
+            cmd_wait--;
+            break;
+        }
+
+        // find a \n or ; line break
+        text = (char *)cmd_text.data;
+
+        quotes = 0;
+        for (i = 0; i< cmd_text.cursize; i++)
+        {
+            if (text[i] == '"')
+                quotes++;
+            if (!(quotes & 1) && text[i] == ';')
+                break;	// don't break if inside a quoted string
+            if (text[i] == '\n' || text[i] == '\r')
+                break;
+        }
+
+        if (i >= (MAX_CMD_LINE - 1)) {
+            i = MAX_CMD_LINE - 1;
+        }
+
+        Com_Memcpy(line, text, i);
+        line[i] = 0;
+
+        // delete the text from the command buffer and move remaining commands down
+        // this is necessary because commands (exec) can insert data at the
+        // beginning of the text buffer
+
+        if (i == cmd_text.cursize)
+            cmd_text.cursize = 0;
+        else
+        {
+            i++;
+            cmd_text.cursize -= i;
+            memmove(text, text + i, cmd_text.cursize);
+        }
+
+        // execute the command line
+
+        Cmd_ExecuteString(line);
+    }
+}
+
+
+/*
+=============================================================================
+
 COMMAND EXECUTION
 
 =============================================================================
@@ -391,6 +556,57 @@ void	Cmd_ExecuteString(const char *text) {
     //// this will usually result in a chat message
     //CL_ForwardCommandToServer(text);
 }
+
+
+/*
+===============
+Cmd_Exec_f
+===============
+*/
+void Cmd_Exec_f(void) {
+    //char	*f;
+    //int		len;
+    //char	filename[MAX_QPATH];
+
+    if (Cmd_Argc() != 2) {
+        Com_Printf("exec <filename> : execute a script file\n");
+        return;
+    }
+
+    //Q_strncpyz(filename, Cmd_Argv(1), sizeof(filename));
+    //COM_DefaultExtension(filename, sizeof(filename), ".cfg");
+    //len = FS_ReadFile(filename, (void **)&f);
+    //if (!f) {
+    //    Com_Printf("couldn't exec %s\n", Cmd_Argv(1));
+    //    return;
+    //}
+    //Com_Printf("execing %s\n", Cmd_Argv(1));
+
+    //Cbuf_InsertText(f);
+
+    //FS_FreeFile(f);
+}
+
+
+/*
+===============
+Cmd_Vstr_f
+
+Inserts the current value of a variable as command text
+===============
+*/
+void Cmd_Vstr_f(void) {
+    char	*v;
+
+    if (Cmd_Argc() != 2) {
+        Com_Printf("vstr <variablename> : execute a variable command\n");
+        return;
+    }
+
+    v = Cvar_VariableString(Cmd_Argv(1));
+    Cbuf_InsertText(va("%s\n", v));
+}
+
 
 /*
 ============

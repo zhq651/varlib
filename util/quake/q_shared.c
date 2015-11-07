@@ -1269,6 +1269,7 @@ void	QDECL Com_Error(int level, const char *error, ...)
     va_start(argptr, error);
     vsprintf(text, error, argptr);
     va_end(argptr);
+    printf(va("%s", text));
 #ifdef WIN32
     MessageBoxA(0, va("%s", text), "error", MB_OK | MB_ICONERROR);
     OutputDebugStringA(va("%s", text));
@@ -1284,12 +1285,29 @@ void	QDECL Com_Printf(const char *msg, ...)
     va_start(argptr, msg);
     vsprintf(text, msg, argptr);
     va_end(argptr);
+    printf(va("%s", text));
 #ifdef WIN32
     //MessageBoxA(0, va("%s", text), "error", MB_OK | MB_ICONERROR);
     OutputDebugStringA(va("%s", text));
 #endif // WIN32
 }
 
+void	QDECL Com_DPrintf(const char *msg, ...)
+{
+    va_list		argptr;
+    char		text[1024];
+
+    va_start(argptr, msg);
+    vsprintf(text, msg, argptr);
+    va_end(argptr);
+#ifdef _DEBUG
+    printf(va("%s", text));
+#ifdef WIN32
+    //MessageBoxA(0, va("%s", text), "error", MB_OK | MB_ICONERROR);
+    OutputDebugStringA(va("%s", text));
+#endif // WIN32f
+#endif // DEBUG
+}
 
 
 /*
