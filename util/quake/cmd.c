@@ -1,6 +1,7 @@
 #include "q_shared.h"
 #include "mem.h"
 #include "cmd.h"
+#include "cvar.h"
 
 #define	MAX_CMD_BUFFER	16384
 #define	MAX_CMD_LINE	1024
