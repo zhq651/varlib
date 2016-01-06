@@ -179,7 +179,7 @@ ngx_palloc_block(ngx_pool_t *pool, size_t size)
 {
     u_char      *m;
     size_t       psize;
-    ngx_pool_t  *p, *new, *current;
+    ngx_pool_t  *p, *new_, *current;
 	//重新分配一块与头链表块相同大小的内存
     psize = (size_t) (pool->d.end - (u_char *) pool);
 
@@ -188,15 +188,15 @@ ngx_palloc_block(ngx_pool_t *pool, size_t size)
         return NULL;
     }
 
-    new = (ngx_pool_t *) m;
+    new_ = (ngx_pool_t *) m;
 
-    new->d.end = m + psize;
-    new->d.next = NULL;
-    new->d.failed = 0;
+    new_->d.end = m + psize;
+    new_->d.next = NULL;
+    new_->d.failed = 0;
 
     m += sizeof(ngx_pool_data_t); //非头结点只存储链表的链接信息
     m = ngx_align_ptr(m, NGX_ALIGNMENT);
-    new->d.last = m + size;
+    new_->d.last = m + size;
 
     current = pool->current;
 	//得到最后一个节点指针p
@@ -206,9 +206,9 @@ ngx_palloc_block(ngx_pool_t *pool, size_t size)
         }
     }
 
-    p->d.next = new; //插入尾部
+    p->d.next = new_; //插入尾部
 
-    pool->current = current ? current : new;
+    pool->current = current ? current : new_;
 
     return m;
 }
